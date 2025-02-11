@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '../../../../lib/db';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-    console.log(`Received ${req.method} request at /api/user/${params.id}`);
+export async function GET(req: NextRequest) {
+    console.log(`Received ${req.method} request at ${req.nextUrl.pathname}`);
 
-    
+    const userId = req.nextUrl.pathname.split('/').pop();
+
     try {
         const user = await db.user.findUnique({
-            where: { id: params.id },
+            where: { id: userId },
             include: {
                 partnerPreferences: true,
             },
