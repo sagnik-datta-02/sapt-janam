@@ -12,9 +12,17 @@ import { Button } from "@/components/ui/button";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
-
+import { useEffect, useState } from 'react';
+import { useRouter } from "next/navigation";
 const Navbar = () => {
   const { data: session } = useSession();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+const router = useRouter();
+  useEffect(() => {
+    if (session || sessionStorage.getItem('id')) {
+      setIsLoggedIn(true);
+    }
+  }, [session]);
 
   return (
     <Card className="w-[100%] rounded-none bg-red-500 pb-4 px-6 border-0 flex items-center justify-between gap-6 shadow-md">
@@ -30,7 +38,7 @@ const Navbar = () => {
         </Link>
       </div>
 
-      <ul className="hidden md:flex items-center gap-10 text-white">
+      {/* <ul className="hidden md:flex items-center gap-10 text-white">
         {["Home", "Why Us?", "Success Stories", "Contact"].map(
           (item) => (
             <li key={item} className="relative group">
@@ -44,34 +52,51 @@ const Navbar = () => {
             </li>
           )
         )}
-      </ul>
+      </ul> */}
 
       <div className="flex items-center gap-4">
-        {session ? (
-          <>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="transition-colors duration-300 hover:bg-red-600 hover:border-white"
-                >
-                  <User className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="w-56 transition-all duration-300 bg-red-500 border-red-400"
+        {isLoggedIn ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="transition-colors duration-300 hover:bg-red-600 hover:border-white"
               >
+                <User className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-56 transition-all duration-300 bg-red-500 border-red-400"
+            >
+              <DropdownMenuItem
+                className="transition-colors duration-300 hover:bg-red-950/50 text-gray-100"
+                onClick={() => {router.push('/dashboard')}}
+              >
+                Dashboard
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled
+                className="transition-colors duration-300 hover:bg-red-950/50 text-gray-100"
+              >
+                Help
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled
+                className="transition-colors duration-300 hover:bg-red-950/50 text-gray-100"
+              >
+                Settings
+              </DropdownMenuItem>
                 <DropdownMenuItem
-                  className="transition-colors duration-300 hover:bg-red-950/50 text-gray-100"
-                  onClick={() => signOut({ callbackUrl: '/' })}
+                className="transition-colors duration-300 hover:bg-red-950/50 text-gray-100"
+                onClick={() => {
+                  sessionStorage.removeItem('id');
+                  signOut({ callbackUrl: '/' });
+                }}
                 >
-                  Logout
+                Logout
                 </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </>
+            </DropdownMenuContent>
+          </DropdownMenu>
         ) : (
           <>
             <Button
@@ -82,7 +107,7 @@ const Navbar = () => {
             </Button>
           </>
         )}
-
+        {!isLoggedIn && (
         <div className="flex md:hidden items-center">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -94,49 +119,25 @@ const Navbar = () => {
                 <Menu className="h-5 w-5 rotate-0 scale-100 text-black" />
               </Button>
             </DropdownMenuTrigger>
-
-            <DropdownMenuContent
-              align="end"
-              className="w-56 transition-all duration-300 bg-red-500 border-red-400"
-            >
-              {["Home", "Why Us?", "Success Stories", "Contact"].map(
-                (item) => (
-                  <DropdownMenuItem
-                    key={item}
-                    className="transition-colors duration-300 hover:bg-red-950/50 text-gray-100"
-                  >
-                    <a
-                      href={item.toLowerCase() === "home" ? "/" : `#${item.toLowerCase()}`}
-                    >
-                      {item}
-                    </a>
-                  </DropdownMenuItem>
-                )
-              )}
-              {session ? (
-                <DropdownMenuItem
-                  className="text-white hover:bg-red-950/50"
-                  onClick={() => signOut({ callbackUrl: '/' })}
-                >
-                  Logout
-                </DropdownMenuItem>
-              ) : (
-                <>
+            
+               <DropdownMenuContent
+               align="end"
+               className="w-56 transition-all duration-300 bg-red-500 border-red-400"
+             >
                   <DropdownMenuItem className="text-white hover:bg-red-950/50">
-                    <Link href="/register" className="w-full">
-                      Find Your Soulmate
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="text-white hover:bg-red-950/50">
-                    <Link href="/sign-in" className="w-full">
-                      Sign In
-                    </Link>
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
+                     <Link href="/sign-up" className="w-full">
+                       Find Your Soulmate
+                     </Link>
+                   </DropdownMenuItem>
+                   <DropdownMenuItem className="text-white hover:bg-red-950/50">
+                     <Link href="/sign-in" className="w-full">
+                       Sign In
+                     </Link>
+                   </DropdownMenuItem>
+               </DropdownMenuContent>
           </DropdownMenu>
         </div>
+        )}
       </div>
     </Card>
   );

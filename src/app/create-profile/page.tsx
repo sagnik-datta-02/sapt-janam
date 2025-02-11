@@ -78,30 +78,39 @@ const CreateProfile = () => {
         setSelectedInterests(newInterests);
         setValue('interests', newInterests);
     };
-
+const router=useRouter();
     useEffect(() => {
-        const checkAuthToken = async () => {
-            
-           
+        setIsLoading(true);
+        if (status === 'unauthenticated' && sessionStorage.getItem('id') === null) {
+            router.push('/sign-in');
+            setIsLoading(false);
+          } else if (status === 'authenticated') {
+            const email = session?.user?.email;
             if (email) {
-                try {
-                    const response = await fetch('/api/get-user', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        }, 
-                        body: JSON.stringify({ email }),
-                    });
-                    if (!response.ok) throw new Error('Failed to fetch user');
-                    const result = await response.json();
-                    sessionStorage.setItem('id', result.id);
-                } catch (error) {
-                    console.error('Error fetching user:', error);
-                }
-            }
-        };
+                fetch('/api/get-user', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ email }),
+                })
+                  .then((response) => response.json())
+                  .then((data) => {
+                    console.log('User ID:', data);
+                    if (data.id) {
+                      sessionStorage.setItem('id', data.id);
+                    }
+                    setIsLoading(false);
+                  })
+                  .catch((error) => {
+                    console.error('Error fetching user ID:', error);
+                    setIsLoading(false);
+                  });
+              }
+        }
+       
 
-        checkAuthToken();
+     setIsLoading(false);   
     }, []);
 
     const onSubmit = async (data: UserFormData) => {
@@ -158,10 +167,18 @@ const CreateProfile = () => {
             opacity: 0
         })
     };
-
+if(isLoading){
+    return( <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-pink-50 to-purple-50">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-red-500 border-solid"></div>
+        </div>)
+}
+        
+else {
     return (
+        <>
+        <Navbar />
         <div className="min-h-screen bg-gradient-to-br from-red-50 via-pink-50 to-purple-50 py-8 px-4">
-            <Navbar />
+            
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -768,7 +785,9 @@ const CreateProfile = () => {
                 </Card >
             </motion.div >
         </div >
+        </>
     );
+}
 };
 
 export default CreateProfile;

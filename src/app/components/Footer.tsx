@@ -6,15 +6,15 @@ const Footer = () => {
         <footer className="w-full bg-background border-t">
             <div className="container px-4 py-8 mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    {/* Company Info */}
+                    
                     <div className="space-y-3">
                         <h3 className="text-lg font-semibold">SAPT Janam</h3>
                         <p className="text-sm text-muted-foreground">
-                            Empowering your digital journey with innovative solutions.
+                            We are a group of passionate individuals who are dedicated to helping you find your perfect match.
                         </p>
                     </div>
 
-                    {/* Quick Links */}
+                   
                     <div className="space-y-3">
                         <h3 className="text-lg font-semibold">Quick Links</h3>
                         <ul className="space-y-2">
@@ -36,7 +36,7 @@ const Footer = () => {
                         </ul>
                     </div>
 
-                    {/* Legal */}
+                    
                     <div className="space-y-3">
                         <h3 className="text-lg font-semibold">Legal</h3>
                         <ul className="space-y-2">
@@ -58,7 +58,7 @@ const Footer = () => {
                         </ul>
                     </div>
 
-                    {/* Social Media */}
+                    
                     <div className="space-y-3">
                         <h3 className="text-lg font-semibold">Connect With Us</h3>
                         <div className="flex space-x-4">
@@ -78,7 +78,7 @@ const Footer = () => {
                     </div>
                 </div>
 
-                {/* Copyright */}
+               
                 <div className="mt-8 pt-4 border-t text-center">
                     <p className="text-sm text-muted-foreground">
                         © {new Date().getFullYear()} SAPT Janam. All rights reserved.
