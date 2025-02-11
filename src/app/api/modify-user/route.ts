@@ -1,5 +1,4 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from 'next-auth/react';
+import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { PrismaClient } from '@prisma/client';
 
@@ -36,28 +35,26 @@ const profileSchema = z.object({
     }).optional(),
 });
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    // const session = await getSession({ req });
+export async function PUT(req: NextRequest) {
+    console.log(`Received ${req.method} request at /api/modify-user`);
 
-    // if (!session) {
-    //     return res.status(401).json({ message: 'Unauthorized' });
-    // }
+    const userId = req.nextUrl.pathname.split('/').pop();
 
-    const { userId } = req.query;
+    try {
+        const data = profileSchema.parse(await req.json());
 
-    if (req.method === 'PUT') {
-        try {
-            const data = profileSchema.parse(req.body);
+        const updatedUser = await updateUserProfile(userId as string, data);
 
-            const updatedUser = await updateUserProfile(userId as string, data);
-
-            return res.status(200).json(updatedUser);
-        } catch (error) {
-            return res.status(400).json({ message: 'Invalid data', error });
-        }
-    } else {
-        return res.status(405).json({ message: 'Method not allowed' });
+        return NextResponse.json(updatedUser, { status: 200 });
+    } catch (error) {
+        console.error('Error updating user profile:', error);
+        return NextResponse.json({ message: 'Invalid data', error }, { status: 400 });
     }
+}
+
+export async function GET(req: NextRequest) {
+    console.log(`Received ${req.method} request at /api/modify-user`);
+    return NextResponse.json({ message: `Method ${req.method} Not Allowed` }, { status: 405 });
 }
 
 async function updateUserProfile(userId: string, data: any) {
