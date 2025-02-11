@@ -1,49 +1,73 @@
-"use client"
+'use client';
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useState } from "react"
-import { FcGoogle } from "react-icons/fc"
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { toast } from "sonner"
-import { motion } from "framer-motion"
-import { FaHeart } from "react-icons/fa"
-
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useState } from "react";
+import { FcGoogle } from "react-icons/fc";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { motion } from "framer-motion";
+import { FaHeart } from "react-icons/fa";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 const signInSchema = z.object({
     email: z.string().email("Invalid email address"),
     password: z.string().min(6, "Password must be at least 6 characters"),
-})
+});
 
-type SignInValues = z.infer<typeof signInSchema>
+type SignInValues = z.infer<typeof signInSchema>;
 
 export default function SignInPage() {
     const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
     const {
         register,
         handleSubmit,
         formState: { errors },
     } = useForm<SignInValues>({
         resolver: zodResolver(signInSchema),
-    })
+    });
 
     const onSubmit = async (data: SignInValues) => {
         setIsLoading(true);
         try {
-            console.log(data)
+            const response = await fetch('/api/sign-in', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to sign in');
+            }
+
+            const result = await response.json();
+            console.log(result);
+            sessionStorage.setItem('id', result.id);
+
+
+            // Redirect to dashboard page
+            router.push('/dashboard');
         } catch (error) {
-            toast.error("Something went wrong")
+            console.error(error);
+            toast.error( "Something went wrong");
         } finally {
             setIsLoading(false);
         }
-    }
+    };
 
-    const handleGoogleSignIn = () => {
-        console.log("Google Sign In")
-    }
+    const handleGoogleSignIn = async () => {
+        await signIn("google", { callbackUrl: '/dashboard' });
+
+    };
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-red-50 to-white p-4">
@@ -52,7 +76,7 @@ export default function SignInPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
             >
-                <Card className="w-full max-w-md  border-red-100 shadow-xl  bg-white/90">
+                <Card className="w-full max-w-md border-red-100 shadow-xl bg-white/90">
                     <CardHeader className="space-y-1">
                         <motion.div
                             initial={{ scale: 0 }}
@@ -110,8 +134,8 @@ export default function SignInPage() {
                                 whileTap={{ scale: 0.98 }}
                                 className="w-full"
                             >
-                                <Button 
-                                    type="submit" 
+                                <Button
+                                    type="submit"
                                     className="w-full bg-red-600 hover:bg-red-700 text-white text-lg py-6"
                                     disabled={isLoading}
                                 >
@@ -148,5 +172,5 @@ export default function SignInPage() {
                 </Card>
             </motion.div>
         </div>
-    )
+    );
 }

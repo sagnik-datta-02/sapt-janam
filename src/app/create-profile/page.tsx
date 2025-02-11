@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,7 +13,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaHeart, FaCamera } from 'react-icons/fa';
-
+import Navbar from '../components/Navbar';
+import Cookies from 'js-cookie';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 const userSchema = z.object({
     fullName: z.string().min(2, "Name must be at least 2 characters"),
     dob: z.string().min(1, "Date of birth is required"),
@@ -55,11 +58,13 @@ const CreateProfile = () => {
     const [profileImage, setProfileImage] = useState<string | null>(null);
     const [direction, setDirection] = useState(0);
     const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-
+    const Router = useRouter();
     const { register, handleSubmit, formState: { errors }, setValue, trigger } = useForm<UserFormData>({
         resolver: zodResolver(userSchema)
     });
-
+    const [isLoading, setIsLoading] = useState(false);
+    const { data: session, status } = useSession();
+    const email = session?.user?.email;
     const interests = [
         "Travel", "Reading", "Music", "Cooking", "Fitness",
         "Photography", "Art", "Dance", "Movies", "Sports",
@@ -74,20 +79,56 @@ const CreateProfile = () => {
         setValue('interests', newInterests);
     };
 
+    useEffect(() => {
+        const checkAuthToken = async () => {
+            
+           
+            if (email) {
+                try {
+                    const response = await fetch('/api/get-user', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }, 
+                        body: JSON.stringify({ email }),
+                    });
+                    if (!response.ok) throw new Error('Failed to fetch user');
+                    const result = await response.json();
+                    sessionStorage.setItem('id', result.id);
+                } catch (error) {
+                    console.error('Error fetching user:', error);
+                }
+            }
+        };
+
+        checkAuthToken();
+    }, []);
+
     const onSubmit = async (data: UserFormData) => {
+        setIsLoading(true);
+        const userId = sessionStorage.getItem('id');
+        if (!userId) {
+            console.error('User ID not found in session storage');
+        setIsLoading(false);
+            return;
+        }
+
         try {
-            const response = await fetch('/api/profile', {
+            const response = await fetch('/api/create-profile', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ ...data, profileImage }),
+                body: JSON.stringify({ ...data, profileImage, id: userId }),
             });
             if (!response.ok) throw new Error('Profile creation failed');
             const result = await response.json();
             console.log(result);
+            setIsLoading(false);
+            Router.push('/dashboard');
         } catch (error) {
             console.error(error);
+            setIsLoading(false);
         }
     };
 
@@ -120,6 +161,7 @@ const CreateProfile = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-red-50 via-pink-50 to-purple-50 py-8 px-4">
+            <Navbar />
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -160,7 +202,7 @@ const CreateProfile = () => {
                                 exit="exit"
                                 transition={{ duration: 0.5 }}
                             >
-                                <form className="space-y-6">
+                                <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
                                     {step === 1 && (
                                         <div className="space-y-4">
                                             <div className="grid md:grid-cols-2 gap-4">
@@ -459,7 +501,7 @@ const CreateProfile = () => {
                                         <div className="space-y-4">
                                             <div className="grid md:grid-cols-2 gap-4">
                                                 <div className="space-y-2">
-                                                    <Label>Preferred Age Range</Label>
+                                                    <Label>Partner's Preferred Age Range</Label>
                                                     <div  className="flex gap-4">
                                                         <Select onValueChange={(value) => setValue('partnerPreferences.ageRange.from', value)}>
                                                             <SelectTrigger>
@@ -492,7 +534,7 @@ const CreateProfile = () => {
                                                     )}
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label>Preferred Height Range</Label>
+                                                    <Label>Partner's Preferred Height Range</Label>
                                                     <div className="flex gap-4">
                                                         <Select onValueChange={(value) => setValue('partnerPreferences.heightRange.from', value)}>
                                                             <SelectTrigger>
@@ -542,7 +584,7 @@ const CreateProfile = () => {
                                                     )}
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label>Preferred Gender</Label>
+                                                    <Label>Partner's Preferred Gender</Label>
                                                     <Select onValueChange={(value) => setValue('partnerPreferences.gender', value)}>
                                                         <SelectTrigger>
                                                             <SelectValue placeholder='Select Gender' />
@@ -558,7 +600,7 @@ const CreateProfile = () => {
                                                         )}
                                                     </div>
                                                 <div className="space-y-2">
-                                                    <Label>Preferred Religion</Label>
+                                                    <Label>Partner's Preferred Religion</Label>
                                                     <Select onValueChange={(value) => setValue('partnerPreferences.religion', value)}>
                                                         <SelectTrigger>
                                                             <SelectValue placeholder="Select religion" />
@@ -575,7 +617,7 @@ const CreateProfile = () => {
                                                     )}
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label>Preferred Mother Tongue</Label>
+                                                    <Label>Partner's Preferred Mother Tongue</Label>
                                                     <Select onValueChange={(value) => setValue('partnerPreferences.motherTongue', value)}>
                                                         <SelectTrigger>
                                                             <SelectValue placeholder="Select language" />
@@ -592,7 +634,7 @@ const CreateProfile = () => {
                                                     )}
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label>Preferred Marital Status</Label>
+                                                    <Label>Partner's Preferred Marital Status</Label>
                                                     <Select onValueChange={(value) => setValue('partnerPreferences.maritalStatus', value)}>
                                                         <SelectTrigger>
                                                             <SelectValue placeholder="Select status" />
@@ -608,7 +650,7 @@ const CreateProfile = () => {
                                                     )}
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label>Preferred Education</Label>
+                                                    <Label>Partner's Preferred Education</Label>
                                                     <Select onValueChange={(value) => setValue('partnerPreferences.education', value)}>
                                                         <SelectTrigger>
                                                             <SelectValue placeholder="Select Education" />
@@ -626,7 +668,7 @@ const CreateProfile = () => {
                                                     )}
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label>Preferred Occupation</Label>
+                                                    <Label>Partner's Preferred Occupation</Label>
                                                     <Select onValueChange={(value) => setValue('partnerPreferences.occupation', value)}>
                                                         <SelectTrigger>
                                                             <SelectValue placeholder="Select Occupation" />
@@ -648,7 +690,7 @@ const CreateProfile = () => {
                                                 </div>
                                                             
                                                 <div className='space-y-2'>
-                                                    <Label>Annual Income</Label>
+                                                    <Label>Partner's Annual Income</Label>
                                                     <Select onValueChange={(value) => setValue('partnerPreferences.income', value)}>
                                                         <SelectTrigger>
                                                             <SelectValue placeholder="Select Income" />
@@ -715,7 +757,7 @@ const CreateProfile = () => {
                                                 type="button"
                                                 className="bg-red-500 hover:bg-red-600 ml-auto"
                                             >
-                                                Complete Profile
+                                               {isLoading? 'Profile Uploading !':'Complete Profile'} 
                                             </Button>
                                         )}
                                     </div>

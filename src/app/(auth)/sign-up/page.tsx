@@ -4,10 +4,11 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { FcGoogle } from 'react-icons/fc';
 import { motion } from 'framer-motion';
 import { FaHeart } from 'react-icons/fa';
-
+import Cookies from 'js-cookie';
 const signUpSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters'),
     email: z.string().email('Invalid email address'),
@@ -22,6 +23,7 @@ type SignUpFormData = z.infer<typeof signUpSchema>;
 
 export default function SignUp() {
     const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
     
     const {
         register,
@@ -34,7 +36,31 @@ export default function SignUp() {
     const onSubmit = async (data: SignUpFormData) => {
         setIsLoading(true);
         try {
-            console.log(data);
+            const response = await fetch('/api/sign-up', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to sign up');
+            }
+
+            const result = await response.json();
+            console.log(result);
+            sessionStorage.setItem('id', result.id);
+
+            // Automatically sign in the user after successful sign-up
+            // await signIn('credentials', {
+            //     redirect: false,
+            //     email: data.email,
+            //     password: data.password,
+            // });
+
+            // Redirect to create-profile page
+            router.push('/create-profile');
         } catch (error) {
             console.error(error);
         } finally {
@@ -142,7 +168,9 @@ export default function SignUp() {
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             type="button"
-                            onClick={() => signIn('google')}
+                            onClick={async () => {
+                                await signIn('google', { redirectTo: '/create-profile' });
+                            }}
                             className="mt-4 w-full flex justify-center items-center gap-2 py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200"
                         >
                             <FcGoogle className="w-5 h-5" />
