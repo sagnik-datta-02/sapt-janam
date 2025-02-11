@@ -115,11 +115,31 @@ const router=useRouter();
 
     const onSubmit = async (data: UserFormData) => {
         setIsLoading(true);
+        
         const userId = sessionStorage.getItem('id');
         if (!userId) {
-            console.error('User ID not found in session storage');
-        setIsLoading(false);
-            return;
+            const email = session?.user?.email;
+            if (email) {
+                fetch('/api/get-user', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ email }),
+                })
+                  .then((response) => response.json())
+                  .then((data) => {
+                    console.log('User ID:', data);
+                    if (data.id) {
+                      sessionStorage.setItem('id', data.id);
+                    }
+                    
+                  })
+                  .catch((error) => {
+                    console.error('Error fetching user ID:', error);
+                    setIsLoading(false);
+                  });
+              }
         }
 
         try {
