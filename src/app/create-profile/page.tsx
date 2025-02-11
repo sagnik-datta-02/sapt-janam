@@ -120,26 +120,24 @@ const router=useRouter();
         if (!userId) {
             const email = session?.user?.email;
             if (email) {
-                fetch('/api/get-user', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({ email }),
-                })
-                  .then((response) => response.json())
-                  .then((data) => {
+                try {
+                    const response = await fetch('/api/get-user', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ email }),
+                    });
+                    const data = await response.json();
                     console.log('User ID:', data);
                     if (data.id) {
-                      sessionStorage.setItem('id', data.id);
+                        sessionStorage.setItem('id', data.id);
                     }
-                    
-                  })
-                  .catch((error) => {
+                } catch (error) {
                     console.error('Error fetching user ID:', error);
                     setIsLoading(false);
-                  });
-              }
+                }
+            }
         }
 
         try {
