@@ -4,6 +4,7 @@ import db from '../../../../lib/db';
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     console.log(`Received ${req.method} request at /api/user/${params.id}`);
 
+    
     try {
         const user = await db.user.findUnique({
             where: { id: params.id },
