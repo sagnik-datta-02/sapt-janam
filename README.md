@@ -1,36 +1,118 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sapt Janam
+
+Sapt Janam is a full-stack web application developed using Next.js and TypeScript. It offers user authentication via email/password and Google Login, and displays dummy data from a PostgreSQL database hosted on NeonDB. The application utilizes Prisma ORM for database interactions and employs Shadcn UI alongside Tailwind CSS for styling.
+
+## Features
+
+- **User Authentication:**
+  - Email and password registration and login.
+  - Google Login integration using NextAuth.js.
+- **Data Display:**
+  - Fetches and displays dummy data from the PostgreSQL database.
+- **Responsive Design:**
+  - Styled with Shadcn UI components and Tailwind CSS for a seamless user experience across devices.
 
 ## Getting Started
 
-First, run the development server:
+Follow these instructions to set up and run the application locally.
+
+### Prerequisites
+
+Ensure you have the following installed:
+
+- [Node.js](https://nodejs.org/) (version 18 or later)
+- [npm](https://www.npmjs.com/) (version 7 or later)
+
+### Installation
+
+1. **Clone the Repository:**
+
+   ```bash
+   git clone https://github.com/sagnik-datta-02/sapt-janam.git
+   cd sapt-janam
+   ```
+
+2. **Install Dependencies:**
+
+   Use the following command to install the necessary packages:
+
+   ```bash
+   npm install --legacy-peer-deps
+   ```
+
+### Environment Variables
+
+Create a `.env` file in the root directory and add the following variables:
+
+```env
+DATABASE_URL=your_neondb_database_url
+AUTH_GOOGLE_ID=your_google_client_id
+AUTH_GOOGLE_SECRET=your_google_client_secret
+AUTH_SECRET=your_auth_secret
+```
+
+- **DATABASE_URL:** The connection string for your NeonDB PostgreSQL database.
+- **AUTH_GOOGLE_ID:** Your Google OAuth Client ID.
+- **AUTH_GOOGLE_SECRET:** Your Google OAuth Client Secret.
+- **AUTH_SECRET:** A secret key for NextAuth.js.
+
+**Note:** Replace `your_neondb_database_url`, `your_google_client_id`, `your_google_client_secret`, and `your_auth_secret` with your actual credentials.
+
+### Database Setup
+
+1. **Initialize Prisma:**
+
+   ```bash
+   npx prisma generate
+   ```
+
+2. **Run Migrations:**
+
+   Apply the database migrations to set up the schema:
+
+   ```bash
+   npx prisma migrate dev
+   ```
+
+### Running the Application
+
+Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The application will be accessible at [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Design Approach and Technologies Used
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Design Approach
 
-## Learn More
+The application is designed with a focus on user authentication and data presentation. It provides a simple interface for users to sign up, log in, and view data fetched from the database. The use of Shadcn UI components ensures a consistent and responsive design, while Tailwind CSS allows for efficient styling.
 
-To learn more about Next.js, take a look at the following resources:
+### Technologies Used
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Next.js:** A React framework for building server-side rendered applications.
+- **TypeScript:** Enhances code quality and maintainability with static typing.
+- **Prisma ORM:** Simplifies database interactions and migrations.
+- **PostgreSQL (NeonDB):** A serverless PostgreSQL database hosting service.
+- **NextAuth.js:** Manages authentication, supporting both email/password and Google OAuth.
+- **Shadcn UI:** Provides pre-built UI components for a consistent design.
+- **Tailwind CSS:** A utility-first CSS framework for efficient styling.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Contributing
 
-## Deploy on Vercel
+Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is licensed under the [MIT License](LICENSE).
+
+## Acknowledgements
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [NextAuth.js Documentation](https://next-auth.js.org/getting-started/introduction)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [NeonDB Documentation](https://neon.tech/docs/introduction)
+
