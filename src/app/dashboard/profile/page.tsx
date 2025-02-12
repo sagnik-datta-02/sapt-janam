@@ -185,7 +185,13 @@ const ProfilePage = () => {
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Date of Birth</Label>
-                                            <p className="text-lg">{userDetails?.dob}</p>
+                                            <p className="text-lg">
+                                                {userDetails?.dob ? new Date(userDetails.dob).toLocaleDateString('en-US', {
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric'
+                                                }) : ''}
+                                            </p>
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Height</Label>

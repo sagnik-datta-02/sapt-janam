@@ -5,16 +5,19 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { FaHeart } from 'react-icons/fa';
 import Navbar from '@/app/components/Navbar';
-import { Dialog, DialogTrigger, DialogContent, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogTrigger, DialogContent, DialogClose, DialogTitle } from '@/components/ui/dialog';
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Match {
   id: string;
   name: string;
-  age: number;
   description: string;
   profileImage: string;
   fullName: string;
-  dob: string;
+  dob: Date;
   height: string;
   motherTongue: string;
   religion: string;
@@ -46,18 +49,20 @@ const MatchesPage = () => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [page, setPage] = useState(1);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
-
+    const [isLoading, setIsLoading] = useState(false);
   const fetchMatches = async () => {
+    setIsLoading(true);
     const response = await fetch(`/api/users`);
     const data = await response.json();
     setMatches(data);
+    setIsLoading(false);
   };
 
   useEffect(() => {
-    if (session) {
+    if (session || sessionStorage.getItem('id')) {
       fetchMatches();
     }
-  }, [session]);
+  }, []);
 
   const handleViewMore = (match: Match) => {
     setSelectedMatch(match);
@@ -70,82 +75,213 @@ const MatchesPage = () => {
   const matchesPerPage = 10;
   const totalPages = Math.ceil(matches.length / matchesPerPage);
   const currentMatches = matches.slice((page - 1) * matchesPerPage, page * matchesPerPage);
-
+  if(isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-pink-50 to-purple-50">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-red-500 border-solid"></div>
+      </div>
+    );
+  }
+  else{
   return (
     <>
       <Navbar />
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="min-h-screen bg-gradient-to-br from-red-50 via-pink-50 to-purple-50 py-8 px-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="min-h-screen bg-gradient-to-br from-red-50 via-pink-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8"
       >
-        <div className="matches-page p-6 bg-white rounded-lg shadow-md max-w-4xl mx-auto border-red-100 shadow-xl">
+        <div className="max-w-7xl mx-auto">
           <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
+            initial={{ y: -20 }}
+            animate={{ y: 0 }}
             transition={{ duration: 0.5 }}
-            className="flex justify-center mb-4"
+            className="text-center mb-12"
           >
-            <FaHeart className="h-12 w-12 text-red-500" />
+            <FaHeart className="h-16 w-16 text-red-500 mx-auto mb-4 animate-pulse" />
+            <h1 className="text-4xl font-serif font-bold text-gray-900 mb-4">
+              Discover Your Perfect Match?
+            </h1>
+            <p className="text-lg text-gray-600">
+              Find someone who shares your values and dreams
+            </p>
           </motion.div>
-          <h2 className="text-3xl font-serif text-center text-red-600">My Matches</h2>
-          <div className="matches-list grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {currentMatches.map((match) => (
-              <div key={match.id} className="match-card p-4 bg-gray-100 rounded-lg shadow-md">
-                <img src={match.profileImage} alt={match.name} className="w-32 h-32 rounded-full mx-auto" />
-                <h3 className="text-xl font-semibold mt-4">{match.name}</h3>
-                <p className="text-gray-600">{match.age} years old</p>
-                <p className="text-gray-600">{match.description}</p>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <button onClick={() => handleViewMore(match)} className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg">
-                      View More
-                    </button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogClose asChild>
-                      <button className="close-button" onClick={closeModal}>
-                        <span aria-hidden>×</span>
-                      </button>
-                    </DialogClose>
-                    {selectedMatch && (
-                      <div className="modal-content">
-                        <img src={selectedMatch.profileImage} alt={selectedMatch.name} className="w-32 h-32 rounded-full mx-auto" />
-                        <h3 className="text-xl font-semibold mt-4">{selectedMatch.fullName}</h3>
-                        <p className="text-gray-600">DOB: {new Date(selectedMatch.dob).toLocaleDateString()}</p>
-                        <p className="text-gray-600">Height: {selectedMatch.height}</p>
-                        <p className="text-gray-600">Mother Tongue: {selectedMatch.motherTongue}</p>
-                        <p className="text-gray-600">Religion: {selectedMatch.religion}</p>
-                        <p className="text-gray-600">Marital Status: {selectedMatch.maritalStatus}</p>
-                        <p className="text-gray-600">Gender: {selectedMatch.gender}</p>
-                        <p className="text-gray-600">Income: {selectedMatch.income}</p>
-                        <p className="text-gray-600">Education: {selectedMatch.education}</p>
-                        <p className="text-gray-600">Occupation: {selectedMatch.occupation}</p>
-                        <p className="text-gray-600">About: {selectedMatch.about}</p>
-                        <p className="text-gray-600">Interests: {selectedMatch.interests.join(', ')}</p>
-                        <h4 className="text-lg font-semibold mt-4">Partner Preferences</h4>
-                        <p className="text-gray-600">Gender: {selectedMatch.partnerPreferences.gender}</p>
-                        <p className="text-gray-600">Age Range: {selectedMatch.partnerPreferences.ageRangeFrom} - {selectedMatch.partnerPreferences.ageRangeTo}</p>
-                        <p className="text-gray-600">Height Range: {selectedMatch.partnerPreferences.heightRangeFrom} - {selectedMatch.partnerPreferences.heightRangeTo}</p>
-                        <p className="text-gray-600">Religion: {selectedMatch.partnerPreferences.religion}</p>
-                        <p className="text-gray-600">Mother Tongue: {selectedMatch.partnerPreferences.motherTongue}</p>
-                        <p className="text-gray-600">Marital Status: {selectedMatch.partnerPreferences.maritalStatus}</p>
-                        <p className="text-gray-600">Education: {selectedMatch.partnerPreferences.education}</p>
-                        <p className="text-gray-600">Occupation: {selectedMatch.partnerPreferences.occupation}</p>
-                        <p className="text-gray-600">Income: {selectedMatch.partnerPreferences.income}</p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {currentMatches.map((match, index) => (
+              <motion.div
+                key={match?.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                  <CardContent className="p-0">
+                    <div className="relative">
+                      <img
+                        src={match?.profileImage}
+                        alt={match?.name}
+                        className="w-full h-64 object-cover rounded-t-lg"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-t-lg" />
+                      <div className="absolute bottom-4 left-4 text-white">
+                        <h3 className="text-xl font-semibold">{match?.name}</h3>
+                        <p className="text-sm opacity-90">{new Date().getFullYear() - new Date(match?.dob).getFullYear()} years</p>
                       </div>
-                    )}
-                  </DialogContent>
-                </Dialog>
-              </div>
+                    </div>
+                    <div className="p-4">
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        <Badge variant="secondary">{match?.religion}</Badge>
+                        <Badge variant="secondary">{match?.occupation}</Badge>
+                      </div>
+                      <p className="text-gray-600 text-sm line-clamp-2 mb-4">
+                        {match?.description}
+                      </p>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <button className="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white py-2 rounded-lg hover:opacity-90 transition-opacity">
+                            View Profile
+                          </button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[600px]">
+                          <DialogTitle className="text-2xl font-serif mb-4">
+                            {match?.fullName}
+                          </DialogTitle>
+                          <ScrollArea className="max-h-[80vh]">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div>
+                                <img
+                                  src={match?.profileImage}
+                                  alt={match?.name}
+                                  className="w-full h-72 object-cover rounded-lg shadow-lg"
+                                />
+                              </div>
+                              <div className="space-y-4">
+                                <div className="space-y-2">
+                                  <h4 className="font-semibold text-lg">Personal Details</h4>
+                                  <div className="grid grid-cols-2 gap-2 text-sm">
+                                    <span className="text-gray-500">Age</span>
+                                    <span>{new Date().getFullYear() - new Date(match?.dob).getFullYear()} years</span>
+                                    <span className="text-gray-500">Height</span>
+                                    <span>{match?.height}</span>
+                                    <span className="text-gray-500">Religion</span>
+                                    <span>{match?.religion}</span>
+                                    <span className="text-gray-500">Mother Tongue</span>
+                                    <span>{match?.motherTongue}</span>
+                                  </div>
+                                </div>
+                                <div className="space-y-2">
+                                  <h4 className="font-semibold text-lg">Professional Details</h4>
+                                  <div className="grid grid-cols-2 gap-2 text-sm">
+                                    <span className="text-gray-500">Occupation</span>
+                                    <span>{match?.occupation}</span>
+                                    <span className="text-gray-500">Education</span>
+                                    <span>{match?.education}</span>
+                                    <span className="text-gray-500">Income</span>
+                                    <span>{match?.income}</span>
+                                  </div>
+
+                              </div>
+                            </div>
+                            <div className="mt-6">
+                              <h4 className="font-semibold text-lg mb-3">About Me</h4>
+                              <p className="text-gray-600">{match?.about}</p>
+                            </div>
+                            <div className="mt-6">
+                              <h4 className="font-semibold text-lg mb-3">Interests</h4>
+                              <div className="flex flex-wrap gap-2">
+                                {match.interests.map((interest : string, i: number) => (
+                                  <Badge key={i} variant="outline">
+                                    {interest}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            <div className="mt-6">
+                                <h4 className="font-semibold text-lg mb-3">Partner Preferences</h4>
+                                <div className="grid grid-cols-2 gap-2 text-sm">
+                                    <span className="text-gray-500">
+                                        Looking For
+                                    </span>
+                                    <span>
+                                        {match?.partnerPreferences?.gender}
+                                    </span>
+                                    <span className="text-gray-500">
+                                        Age Range
+                                    </span>
+                                    <span>
+                                        {match?.partnerPreferences?.ageRangeFrom} - {match?.partnerPreferences?.ageRangeTo} years
+                                    </span>
+                                    <span className="text-gray-500">
+                                        Height Range
+                                    </span>
+                                    <span>
+                                        {match?.partnerPreferences?.heightRangeFrom} - {match?.partnerPreferences?.heightRangeTo}
+                                    </span>
+                                    <span className="text-gray-500">
+                                        Religion
+                                    </span>
+                                    <span>
+                                        {match?.partnerPreferences?.religion}
+                                    </span>
+                                    <span className="text-gray-500">
+                                        Mother Tongue
+                                    </span>
+                                    <span>
+                                        {match?.partnerPreferences?.motherTongue}
+                                    </span>
+                                    <span className="text-gray-500">
+                                        Marital Status
+                                    </span>
+                                    <span>
+                                        {match?.partnerPreferences?.maritalStatus}
+                                    </span>
+                                    <span className="text-gray-500">
+                                        Education
+                                    </span>
+                                    <span>
+                                        {match?.partnerPreferences?.education}
+                                    </span>
+                                    <span className="text-gray-500">
+                                        Occupation
+                                    </span>
+                                    <span>
+                                        {match?.partnerPreferences?.occupation}
+                                    </span>
+                                    <span className="text-gray-500">
+                                        Income
+                                    </span>
+                                    <span>
+                                        {match?.partnerPreferences?.income}
+                                    </span>
+                                </div>
+                            </div>
+                            </div>
+
+                          </ScrollArea>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
           </div>
-          <div className="pagination mt-6 flex justify-between">
-            <button onClick={() => setPage(page - 1)} disabled={page === 1} className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg">
+
+          <div className="mt-8 flex justify-center gap-4">
+            <button
+              onClick={() => setPage(page - 1)}
+              disabled={page === 1}
+              className="px-6 py-2 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
               Previous
             </button>
-            <button onClick={() => setPage(page + 1)} disabled={page === totalPages} className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg">
+            <button
+              onClick={() => setPage(page + 1)}
+              disabled={page === totalPages}
+              className="px-6 py-2 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
               Next
             </button>
           </div>
@@ -153,6 +289,7 @@ const MatchesPage = () => {
       </motion.div>
     </>
   );
+}
 };
 
 export default MatchesPage;

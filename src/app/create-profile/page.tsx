@@ -116,7 +116,7 @@ const router=useRouter();
     const onSubmit = async (data: UserFormData) => {
         setIsLoading(true);
         
-        const userId = sessionStorage.getItem('id');
+        let userId = sessionStorage.getItem('id');
         if (!userId) {
             const email = session?.user?.email;
             if (email) {
@@ -132,6 +132,7 @@ const router=useRouter();
                     console.log('User ID:', data);
                     if (data.id) {
                         sessionStorage.setItem('id', data.id);
+                        userId = data.id;
                     }
                 } catch (error) {
                     console.error('Error fetching user ID:', error);
